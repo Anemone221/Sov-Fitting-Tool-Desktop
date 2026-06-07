@@ -6,10 +6,7 @@ on:
 
 jobs:
   build-windows:
-    # Pinned to 2022: on windows-2025 (current windows-latest) electron's binary
-    # extraction silently half-completes (gutted dist, no path.txt) even though
-    # the same toolchain installs fine on Win11/Node 24 locally.
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +16,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          # Node 24.16 silently breaks electron's extract-zip unpack (binary
+          # never lands); 22 LTS is what the Electron toolchain is tested against.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -71,7 +70,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          # Node 24.16 silently breaks electron's extract-zip unpack (binary
+          # never lands); 22 LTS is what the Electron toolchain is tested against.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -125,7 +126,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          # Node 24.16 silently breaks electron's extract-zip unpack (binary
+          # never lands); 22 LTS is what the Electron toolchain is tested against.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
