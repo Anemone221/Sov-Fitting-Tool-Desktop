@@ -20,24 +20,21 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        # --foreground-scripts surfaces dependency lifecycle output (notably
+        # electron's own postinstall/install.js) so we can see why the Electron
+        # binary install isn't completing during npm i.
+        run: npm i --foreground-scripts
 
-      - name: Ensure Electron binary
-        # `npm i` installs the Electron binary via electron's own postinstall.
-        # Only fall back to the helper (into a clean dist) if that didn't land —
-        # re-extracting over an existing dist fails on Windows.
+      - name: Inspect electron install
+        if: always()
         shell: bash
         run: |
-          set -e
-          if [ ! -f node_modules/electron/path.txt ]; then
-            echo "path.txt missing after npm i; installing into a clean dist via helper"
-            rm -rf node_modules/electron/dist
-            node electron/ci-install-electron.cjs
-          else
-            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
-          fi
-          test -f node_modules/electron/path.txt
-          node -p "'electron resolves to ' + require('electron')"
+          echo "--- node_modules/electron (top level) ---"
+          ls -la node_modules/electron || echo "(no electron dir)"
+          echo "--- path.txt ---"
+          cat node_modules/electron/path.txt || echo "(no path.txt)"
+          echo "--- dist ---"
+          ls -la node_modules/electron/dist || echo "(no dist dir)"
 
       - name: Generate Seed Database
         run: npm run seed
@@ -69,24 +66,21 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        # --foreground-scripts surfaces dependency lifecycle output (notably
+        # electron's own postinstall/install.js) so we can see why the Electron
+        # binary install isn't completing during npm i.
+        run: npm i --foreground-scripts
 
-      - name: Ensure Electron binary
-        # `npm i` installs the Electron binary via electron's own postinstall.
-        # Only fall back to the helper (into a clean dist) if that didn't land —
-        # re-extracting over an existing dist fails on Windows.
+      - name: Inspect electron install
+        if: always()
         shell: bash
         run: |
-          set -e
-          if [ ! -f node_modules/electron/path.txt ]; then
-            echo "path.txt missing after npm i; installing into a clean dist via helper"
-            rm -rf node_modules/electron/dist
-            node electron/ci-install-electron.cjs
-          else
-            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
-          fi
-          test -f node_modules/electron/path.txt
-          node -p "'electron resolves to ' + require('electron')"
+          echo "--- node_modules/electron (top level) ---"
+          ls -la node_modules/electron || echo "(no electron dir)"
+          echo "--- path.txt ---"
+          cat node_modules/electron/path.txt || echo "(no path.txt)"
+          echo "--- dist ---"
+          ls -la node_modules/electron/dist || echo "(no dist dir)"
 
       - name: Generate Seed Database
         run: npm run seed
@@ -120,24 +114,21 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        # --foreground-scripts surfaces dependency lifecycle output (notably
+        # electron's own postinstall/install.js) so we can see why the Electron
+        # binary install isn't completing during npm i.
+        run: npm i --foreground-scripts
 
-      - name: Ensure Electron binary
-        # `npm i` installs the Electron binary via electron's own postinstall.
-        # Only fall back to the helper (into a clean dist) if that didn't land —
-        # re-extracting over an existing dist fails on Windows.
+      - name: Inspect electron install
+        if: always()
         shell: bash
         run: |
-          set -e
-          if [ ! -f node_modules/electron/path.txt ]; then
-            echo "path.txt missing after npm i; installing into a clean dist via helper"
-            rm -rf node_modules/electron/dist
-            node electron/ci-install-electron.cjs
-          else
-            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
-          fi
-          test -f node_modules/electron/path.txt
-          node -p "'electron resolves to ' + require('electron')"
+          echo "--- node_modules/electron (top level) ---"
+          ls -la node_modules/electron || echo "(no electron dir)"
+          echo "--- path.txt ---"
+          cat node_modules/electron/path.txt || echo "(no path.txt)"
+          echo "--- dist ---"
+          ls -la node_modules/electron/dist || echo "(no dist dir)"
 
       - name: Generate Seed Database
         run: xvfb-run --auto-servernum npm run seed
