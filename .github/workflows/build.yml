@@ -23,11 +23,24 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # Force the download even if ELECTRON_SKIP_BINARY_DOWNLOAD is set
-              # (truthy) anywhere in the runner environment. `env -u` strips the
-              # var entirely so electron/install.js cannot take its skip branch.
+              # `npm i` succeeding while the binary is absent means electron's own
+              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
+              # was truthy in the runner env. Unset it here so install.js cannot skip,
+              # self-heal a partial install, then verify path.txt (the binary marker)
+              # exists and that `require('electron')` resolves. Fail loudly otherwise.
               shell: bash
-              run: env -u ELECTRON_SKIP_BINARY_DOWNLOAD node node_modules/electron/install.js
+              run: |
+                  set -e
+                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
+                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
+                  node node_modules/electron/install.js
+                  if [ ! -f node_modules/electron/path.txt ]; then
+                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
+                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
+                    node node_modules/electron/install.js
+                  fi
+                  test -f node_modules/electron/path.txt
+                  node -p "'electron resolves to ' + require('electron')"
 
             - name: Generate Seed Database
               run: npm run seed
@@ -62,11 +75,24 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # Force the download even if ELECTRON_SKIP_BINARY_DOWNLOAD is set
-              # (truthy) anywhere in the runner environment. `env -u` strips the
-              # var entirely so electron/install.js cannot take its skip branch.
+              # `npm i` succeeding while the binary is absent means electron's own
+              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
+              # was truthy in the runner env. Unset it here so install.js cannot skip,
+              # self-heal a partial install, then verify path.txt (the binary marker)
+              # exists and that `require('electron')` resolves. Fail loudly otherwise.
               shell: bash
-              run: env -u ELECTRON_SKIP_BINARY_DOWNLOAD node node_modules/electron/install.js
+              run: |
+                  set -e
+                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
+                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
+                  node node_modules/electron/install.js
+                  if [ ! -f node_modules/electron/path.txt ]; then
+                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
+                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
+                    node node_modules/electron/install.js
+                  fi
+                  test -f node_modules/electron/path.txt
+                  node -p "'electron resolves to ' + require('electron')"
 
             - name: Generate Seed Database
               run: npm run seed
@@ -103,11 +129,24 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # Force the download even if ELECTRON_SKIP_BINARY_DOWNLOAD is set
-              # (truthy) anywhere in the runner environment. `env -u` strips the
-              # var entirely so electron/install.js cannot take its skip branch.
+              # `npm i` succeeding while the binary is absent means electron's own
+              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
+              # was truthy in the runner env. Unset it here so install.js cannot skip,
+              # self-heal a partial install, then verify path.txt (the binary marker)
+              # exists and that `require('electron')` resolves. Fail loudly otherwise.
               shell: bash
-              run: env -u ELECTRON_SKIP_BINARY_DOWNLOAD node node_modules/electron/install.js
+              run: |
+                  set -e
+                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
+                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
+                  node node_modules/electron/install.js
+                  if [ ! -f node_modules/electron/path.txt ]; then
+                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
+                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
+                    node node_modules/electron/install.js
+                  fi
+                  test -f node_modules/electron/path.txt
+                  node -p "'electron resolves to ' + require('electron')"
 
             - name: Generate Seed Database
               run: xvfb-run --auto-servernum npm run seed
