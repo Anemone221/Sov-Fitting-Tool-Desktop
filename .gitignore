@@ -10,3 +10,4 @@ resources/seed.db
 *.tsbuildinfo
 **/**/seed.db
 **/**/seed.db.*
+failure.txt
