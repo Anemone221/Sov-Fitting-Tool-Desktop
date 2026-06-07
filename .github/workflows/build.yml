@@ -28,16 +28,22 @@ jobs:
         # binary install isn't completing during npm i.
         run: npm i --foreground-scripts
 
-      - name: Inspect electron install
+      - name: Diagnose electron install
         if: always()
         shell: bash
         run: |
-          echo "--- node_modules/electron (top level) ---"
-          ls -la node_modules/electron || echo "(no electron dir)"
-          echo "--- path.txt ---"
+          set +e
+          echo "=== root node_modules/electron/dist ==="
+          ls -la node_modules/electron/dist || echo "(no dist)"
+          echo "=== path.txt ==="
           cat node_modules/electron/path.txt || echo "(no path.txt)"
-          echo "--- dist ---"
-          ls -la node_modules/electron/dist || echo "(no dist dir)"
+          echo "=== react/node_modules/electron (submodule theory) ==="
+          ls -la react/node_modules/electron 2>/dev/null || echo "(none - submodule deps not installed)"
+          echo "=== free space ==="
+          df -h . || true
+          echo "=== extract-zip behaviour test (download + extract to dist-test) ==="
+          node -e "const p=require('path'),fs=require('fs');const ed=p.dirname(require.resolve('electron/package.json'));const {version}=require('electron/package.json');const {downloadArtifact}=require(require.resolve('@electron/get',{paths:[ed]}));const extract=require(require.resolve('extract-zip',{paths:[ed]}));(async()=>{const zip=await downloadArtifact({version,artifactName:'electron',platform:process.platform,arch:process.arch});console.log('zip',zip,fs.statSync(zip).size,'bytes');const d=p.join(ed,'dist-test');fs.rmSync(d,{recursive:true,force:true});let n=0;await extract(zip,{dir:d,onEntry:e=>{n++;}});console.log('entries extracted:',n,'top-level files:',fs.readdirSync(d).length);})().then(()=>console.log('EXTRACT OK')).catch(e=>{console.error('EXTRACT ERROR:',e&&e.stack||e);process.exit(1)})"
+          echo "extract test exit code: $?"
 
       - name: Generate Seed Database
         run: npm run seed
@@ -74,16 +80,22 @@ jobs:
         # binary install isn't completing during npm i.
         run: npm i --foreground-scripts
 
-      - name: Inspect electron install
+      - name: Diagnose electron install
         if: always()
         shell: bash
         run: |
-          echo "--- node_modules/electron (top level) ---"
-          ls -la node_modules/electron || echo "(no electron dir)"
-          echo "--- path.txt ---"
+          set +e
+          echo "=== root node_modules/electron/dist ==="
+          ls -la node_modules/electron/dist || echo "(no dist)"
+          echo "=== path.txt ==="
           cat node_modules/electron/path.txt || echo "(no path.txt)"
-          echo "--- dist ---"
-          ls -la node_modules/electron/dist || echo "(no dist dir)"
+          echo "=== react/node_modules/electron (submodule theory) ==="
+          ls -la react/node_modules/electron 2>/dev/null || echo "(none - submodule deps not installed)"
+          echo "=== free space ==="
+          df -h . || true
+          echo "=== extract-zip behaviour test (download + extract to dist-test) ==="
+          node -e "const p=require('path'),fs=require('fs');const ed=p.dirname(require.resolve('electron/package.json'));const {version}=require('electron/package.json');const {downloadArtifact}=require(require.resolve('@electron/get',{paths:[ed]}));const extract=require(require.resolve('extract-zip',{paths:[ed]}));(async()=>{const zip=await downloadArtifact({version,artifactName:'electron',platform:process.platform,arch:process.arch});console.log('zip',zip,fs.statSync(zip).size,'bytes');const d=p.join(ed,'dist-test');fs.rmSync(d,{recursive:true,force:true});let n=0;await extract(zip,{dir:d,onEntry:e=>{n++;}});console.log('entries extracted:',n,'top-level files:',fs.readdirSync(d).length);})().then(()=>console.log('EXTRACT OK')).catch(e=>{console.error('EXTRACT ERROR:',e&&e.stack||e);process.exit(1)})"
+          echo "extract test exit code: $?"
 
       - name: Generate Seed Database
         run: npm run seed
@@ -122,16 +134,22 @@ jobs:
         # binary install isn't completing during npm i.
         run: npm i --foreground-scripts
 
-      - name: Inspect electron install
+      - name: Diagnose electron install
         if: always()
         shell: bash
         run: |
-          echo "--- node_modules/electron (top level) ---"
-          ls -la node_modules/electron || echo "(no electron dir)"
-          echo "--- path.txt ---"
+          set +e
+          echo "=== root node_modules/electron/dist ==="
+          ls -la node_modules/electron/dist || echo "(no dist)"
+          echo "=== path.txt ==="
           cat node_modules/electron/path.txt || echo "(no path.txt)"
-          echo "--- dist ---"
-          ls -la node_modules/electron/dist || echo "(no dist dir)"
+          echo "=== react/node_modules/electron (submodule theory) ==="
+          ls -la react/node_modules/electron 2>/dev/null || echo "(none - submodule deps not installed)"
+          echo "=== free space ==="
+          df -h . || true
+          echo "=== extract-zip behaviour test (download + extract to dist-test) ==="
+          node -e "const p=require('path'),fs=require('fs');const ed=p.dirname(require.resolve('electron/package.json'));const {version}=require('electron/package.json');const {downloadArtifact}=require(require.resolve('@electron/get',{paths:[ed]}));const extract=require(require.resolve('extract-zip',{paths:[ed]}));(async()=>{const zip=await downloadArtifact({version,artifactName:'electron',platform:process.platform,arch:process.arch});console.log('zip',zip,fs.statSync(zip).size,'bytes');const d=p.join(ed,'dist-test');fs.rmSync(d,{recursive:true,force:true});let n=0;await extract(zip,{dir:d,onEntry:e=>{n++;}});console.log('entries extracted:',n,'top-level files:',fs.readdirSync(d).length);})().then(()=>console.log('EXTRACT OK')).catch(e=>{console.error('EXTRACT ERROR:',e&&e.stack||e);process.exit(1)})"
+          echo "extract test exit code: $?"
 
       - name: Generate Seed Database
         run: xvfb-run --auto-servernum npm run seed
