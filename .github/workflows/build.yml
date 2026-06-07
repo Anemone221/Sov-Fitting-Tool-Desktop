@@ -22,17 +22,20 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      - name: Debug env
-        shell: bash
-        run: |
-          echo "skip=[${ELECTRON_SKIP_BINARY_DOWNLOAD-<unset>}]"
-          env | grep -i electron || echo "(no electron* env vars)"
-
-      - name: Install Electron binary
+      - name: Ensure Electron binary
+        # `npm i` installs the Electron binary via electron's own postinstall.
+        # Only fall back to the helper (into a clean dist) if that didn't land —
+        # re-extracting over an existing dist fails on Windows.
         shell: bash
         run: |
           set -e
-          node electron/ci-install-electron.cjs
+          if [ ! -f node_modules/electron/path.txt ]; then
+            echo "path.txt missing after npm i; installing into a clean dist via helper"
+            rm -rf node_modules/electron/dist
+            node electron/ci-install-electron.cjs
+          else
+            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
+          fi
           test -f node_modules/electron/path.txt
           node -p "'electron resolves to ' + require('electron')"
 
@@ -68,17 +71,20 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      - name: Debug env
-        shell: bash
-        run: |
-          echo "skip=[${ELECTRON_SKIP_BINARY_DOWNLOAD-<unset>}]"
-          env | grep -i electron || echo "(no electron* env vars)"
-
-      - name: Install Electron binary
+      - name: Ensure Electron binary
+        # `npm i` installs the Electron binary via electron's own postinstall.
+        # Only fall back to the helper (into a clean dist) if that didn't land —
+        # re-extracting over an existing dist fails on Windows.
         shell: bash
         run: |
           set -e
-          node electron/ci-install-electron.cjs
+          if [ ! -f node_modules/electron/path.txt ]; then
+            echo "path.txt missing after npm i; installing into a clean dist via helper"
+            rm -rf node_modules/electron/dist
+            node electron/ci-install-electron.cjs
+          else
+            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
+          fi
           test -f node_modules/electron/path.txt
           node -p "'electron resolves to ' + require('electron')"
 
@@ -116,17 +122,20 @@ jobs:
       - name: Install dependencies
         run: npm i
 
-      - name: Debug env
-        shell: bash
-        run: |
-          echo "skip=[${ELECTRON_SKIP_BINARY_DOWNLOAD-<unset>}]"
-          env | grep -i electron || echo "(no electron* env vars)"
-
-      - name: Install Electron binary
+      - name: Ensure Electron binary
+        # `npm i` installs the Electron binary via electron's own postinstall.
+        # Only fall back to the helper (into a clean dist) if that didn't land —
+        # re-extracting over an existing dist fails on Windows.
         shell: bash
         run: |
           set -e
-          node electron/ci-install-electron.cjs
+          if [ ! -f node_modules/electron/path.txt ]; then
+            echo "path.txt missing after npm i; installing into a clean dist via helper"
+            rm -rf node_modules/electron/dist
+            node electron/ci-install-electron.cjs
+          else
+            echo "electron installed by npm i: $(cat node_modules/electron/path.txt)"
+          fi
           test -f node_modules/electron/path.txt
           node -p "'electron resolves to ' + require('electron')"
 
