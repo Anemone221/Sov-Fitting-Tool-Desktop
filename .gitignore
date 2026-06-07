@@ -1,0 +1,12 @@
+node_modules/
+out/
+dist/
+build/
+resources/seed.db
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.tsbuildinfo
+**/**/seed.db
+**/**/seed.db.*
