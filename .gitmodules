@@ -1,4 +1,4 @@
 [submodule "react"]
 	path = react
 	url = https://github.com/Anemone221/Sovereignty-Fitting-Tool.git
-	branch = Strip-Electron-from-SFT-For-Split-Repository
+	branch = main
