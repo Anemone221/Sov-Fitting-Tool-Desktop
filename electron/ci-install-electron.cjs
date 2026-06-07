@@ -1,18 +1,28 @@
 'use strict';
 
-// CI helper: download + extract the Electron binary unconditionally.
+// CI helper: download + extract the Electron binary.
 //
-// electron's own node_modules/electron/install.js honours
-// ELECTRON_SKIP_BINARY_DOWNLOAD and exits early (exit 0, nothing downloaded)
-// when it's truthy. On the GitHub-hosted runners that flag is present in the
-// environment and survives a shell `unset`, so the binary never lands, path.txt
-// is never written, and `npm run seed` fails with "Electron failed to install
-// correctly". This script performs the same download/extract install.js would,
-// minus the skip check, and fails loudly if the download itself errors.
+// On the GitHub-hosted runners `npm i` is not completing electron's binary
+// install (path.txt never gets written) — the download succeeds but the zip
+// extraction fails, so `npm run seed` then dies with "Electron failed to install
+// correctly". This script reproduces install.js's download + extract with full
+// error capture and a retry, so a transient failure (e.g. Defender briefly
+// locking electron.exe mid-extract) doesn't sink the whole build.
 
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+
+// A stream 'error' event during extraction surfaces as an uncaught exception
+// that bypasses promise .catch — capture both so the real error is always shown.
+process.on('uncaughtException', (err) => {
+  console.error('[ci-electron] UNCAUGHT:', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('[ci-electron] UNHANDLED REJECTION:', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
 
 const electronDir = path.dirname(require.resolve('electron/package.json'));
 const { version } = require('electron/package.json');
@@ -36,28 +46,51 @@ function platformExecPath(platform) {
   }
 }
 
-const platform = process.env.npm_config_platform || os.platform();
-const arch = process.env.npm_config_arch || os.arch();
-const execPath = platformExecPath(platform);
-const distPath = path.join(electronDir, 'dist');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-console.log(`[ci-electron] installing electron ${version} for ${platform}/${arch}`);
+async function main() {
+  const platform = process.env.npm_config_platform || os.platform();
+  const arch = process.env.npm_config_arch || os.arch();
+  const execPath = platformExecPath(platform);
+  const distPath = path.join(electronDir, 'dist');
 
-downloadArtifact({ version, artifactName: 'electron', platform, arch })
-  .then((zipPath) => {
-    console.log(`[ci-electron] downloaded ${zipPath}`);
-    return extract(zipPath, { dir: distPath }).then(() => {
-      // Mirror install.js: hoist the type defs out of dist, then mark the
-      // install as complete by writing path.txt (what index.js reads).
-      const srcTypeDef = path.join(distPath, 'electron.d.ts');
-      if (fs.existsSync(srcTypeDef)) {
-        fs.renameSync(srcTypeDef, path.join(electronDir, 'electron.d.ts'));
-      }
-      fs.writeFileSync(path.join(electronDir, 'path.txt'), execPath);
-      console.log(`[ci-electron] wrote path.txt -> ${execPath}`);
-    });
-  })
-  .catch((err) => {
-    console.error('[ci-electron] FAILED:', err.stack || err);
-    process.exit(1);
-  });
+  console.log(`[ci-electron] installing electron ${version} for ${platform}/${arch}`);
+  console.log(`[ci-electron] electronDir=${electronDir}`);
+  console.log(`[ci-electron] distPath=${distPath} (len ${distPath.length})`);
+
+  const zipPath = await downloadArtifact({ version, artifactName: 'electron', platform, arch });
+  console.log(`[ci-electron] downloaded ${zipPath}`);
+  const { size } = fs.statSync(zipPath);
+  console.log(`[ci-electron] zip size ${(size / 1024 / 1024).toFixed(1)} MB`);
+
+  const attempts = 3;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      fs.rmSync(distPath, { recursive: true, force: true });
+      await extract(zipPath, { dir: distPath });
+      console.log(`[ci-electron] extracted on attempt ${attempt}`);
+      break;
+    } catch (err) {
+      console.error(
+        `[ci-electron] extract attempt ${attempt}/${attempts} failed:`,
+        err && err.stack ? err.stack : err,
+      );
+      if (attempt === attempts) throw err;
+      await sleep(2000);
+    }
+  }
+
+  // Mirror install.js: hoist the type defs out of dist, then mark the install as
+  // complete by writing path.txt (what electron/index.js reads).
+  const srcTypeDef = path.join(distPath, 'electron.d.ts');
+  if (fs.existsSync(srcTypeDef)) {
+    fs.renameSync(srcTypeDef, path.join(electronDir, 'electron.d.ts'));
+  }
+  fs.writeFileSync(path.join(electronDir, 'path.txt'), execPath);
+  console.log(`[ci-electron] wrote path.txt -> ${execPath}`);
+}
+
+main().catch((err) => {
+  console.error('[ci-electron] FAILED:', err && err.stack ? err.stack : err);
+  process.exit(1);
+});
