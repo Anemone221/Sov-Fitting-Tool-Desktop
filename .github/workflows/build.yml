@@ -6,19 +6,11 @@ on:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    # Pinned to 2022: on windows-2025 (current windows-latest) electron's binary
+    # extraction silently half-completes (gutted dist, no path.txt) even though
+    # the same toolchain installs fine on Win11/Node 24 locally.
+    runs-on: windows-2022
     steps:
-      - name: Exclude workspace from Windows Defender
-        # Defender real-time protection on the windows runner quarantines
-        # electron.exe / *.dll as electron's installer extracts them, leaving a
-        # gutted dist (only locales/) and no path.txt — install.js still exits 0,
-        # so npm i looks successful and seed then fails. Exclude the workspace so
-        # extraction can complete.
-        shell: pwsh
-        run: |
-          Add-MpPreference -ExclusionPath "${{ github.workspace }}" -ErrorAction SilentlyContinue
-          Write-Host "Defender exclusion added for ${{ github.workspace }}"
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
