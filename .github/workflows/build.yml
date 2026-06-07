@@ -23,22 +23,14 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # `npm i` succeeding while the binary is absent means electron's own
-              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
-              # was truthy in the runner env. Unset it here so install.js cannot skip,
-              # self-heal a partial install, then verify path.txt (the binary marker)
-              # exists and that `require('electron')` resolves. Fail loudly otherwise.
+              # electron's own install.js honours ELECTRON_SKIP_BINARY_DOWNLOAD,
+              # which is truthy on the runner and survives a shell `unset`, so it
+              # exits without downloading. This helper downloads + extracts the
+              # binary directly (no skip check) and fails loudly on a real error.
               shell: bash
               run: |
                   set -e
-                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
-                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
-                  node node_modules/electron/install.js
-                  if [ ! -f node_modules/electron/path.txt ]; then
-                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
-                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
-                    node node_modules/electron/install.js
-                  fi
+                  node electron/ci-install-electron.cjs
                   test -f node_modules/electron/path.txt
                   node -p "'electron resolves to ' + require('electron')"
 
@@ -75,22 +67,14 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # `npm i` succeeding while the binary is absent means electron's own
-              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
-              # was truthy in the runner env. Unset it here so install.js cannot skip,
-              # self-heal a partial install, then verify path.txt (the binary marker)
-              # exists and that `require('electron')` resolves. Fail loudly otherwise.
+              # electron's own install.js honours ELECTRON_SKIP_BINARY_DOWNLOAD,
+              # which is truthy on the runner and survives a shell `unset`, so it
+              # exits without downloading. This helper downloads + extracts the
+              # binary directly (no skip check) and fails loudly on a real error.
               shell: bash
               run: |
                   set -e
-                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
-                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
-                  node node_modules/electron/install.js
-                  if [ ! -f node_modules/electron/path.txt ]; then
-                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
-                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
-                    node node_modules/electron/install.js
-                  fi
+                  node electron/ci-install-electron.cjs
                   test -f node_modules/electron/path.txt
                   node -p "'electron resolves to ' + require('electron')"
 
@@ -129,22 +113,14 @@ jobs:
               run: npm i
 
             - name: Install Electron binary
-              # `npm i` succeeding while the binary is absent means electron's own
-              # install.js took its skip branch — i.e. ELECTRON_SKIP_BINARY_DOWNLOAD
-              # was truthy in the runner env. Unset it here so install.js cannot skip,
-              # self-heal a partial install, then verify path.txt (the binary marker)
-              # exists and that `require('electron')` resolves. Fail loudly otherwise.
+              # electron's own install.js honours ELECTRON_SKIP_BINARY_DOWNLOAD,
+              # which is truthy on the runner and survives a shell `unset`, so it
+              # exits without downloading. This helper downloads + extracts the
+              # binary directly (no skip check) and fails loudly on a real error.
               shell: bash
               run: |
                   set -e
-                  unset ELECTRON_SKIP_BINARY_DOWNLOAD
-                  echo "node: $(node -v)  electron pkg: $(node -p "require('electron/package.json').version")"
-                  node node_modules/electron/install.js
-                  if [ ! -f node_modules/electron/path.txt ]; then
-                    echo "::warning::path.txt missing after install; forcing a clean reinstall"
-                    rm -rf node_modules/electron/dist node_modules/electron/path.txt
-                    node node_modules/electron/install.js
-                  fi
+                  node electron/ci-install-electron.cjs
                   test -f node_modules/electron/path.txt
                   node -p "'electron resolves to ' + require('electron')"
 
