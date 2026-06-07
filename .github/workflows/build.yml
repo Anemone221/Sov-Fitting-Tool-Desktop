@@ -22,6 +22,9 @@ jobs:
             - name: Install dependencies
               run: npm i
 
+            - name: Install Electron binary
+              run: node node_modules/electron/install.js
+
             - name: Generate Seed Database
               run: npm run seed
 
@@ -53,6 +56,9 @@ jobs:
 
             - name: Install dependencies
               run: npm i
+
+            - name: Install Electron binary
+              run: node node_modules/electron/install.js
 
             - name: Generate Seed Database
               run: npm run seed
@@ -87,6 +93,9 @@ jobs:
 
             - name: Install dependencies
               run: npm i
+
+            - name: Install Electron binary
+              run: node node_modules/electron/install.js
 
             - name: Generate Seed Database
               run: xvfb-run --auto-servernum npm run seed
