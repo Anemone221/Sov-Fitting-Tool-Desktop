@@ -4,6 +4,12 @@ on:
     push:
         branches: [main]
 
+# A truthy ELECTRON_SKIP_BINARY_DOWNLOAD in the runner environment makes
+# electron's install.js exit early without downloading the binary, which breaks
+# `npm run seed`. An empty string is falsy in JS, so this re-enables the download.
+env:
+    ELECTRON_SKIP_BINARY_DOWNLOAD: ""
+
 jobs:
     build-windows:
         runs-on: windows-latest
