@@ -36,6 +36,8 @@ export default defineConfig({
   renderer: {
     root: resolve(REACT, 'src'),
     build: {
+      outDir: resolve(__dirname, 'out/renderer'),
+      emptyOutDir: true,
       rollupOptions: {
         input: {
           index: resolve(REACT, 'src/index.html')
