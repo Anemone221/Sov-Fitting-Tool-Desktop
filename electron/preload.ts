@@ -93,6 +93,8 @@ const api: EveSovApi = {
       ipcRenderer.invoke('exports.capturePng', filename, dataUrl, meta),
     captureSvg: (filename, svgContent, meta) =>
       ipcRenderer.invoke('exports.captureSvg', filename, svgContent, meta),
+    captureText: (filename, text, meta) =>
+      ipcRenderer.invoke('exports.captureText', filename, text, meta),
     list: (planId) => ipcRenderer.invoke('exports.list', planId ?? null),
     deleteLog: (id) => ipcRenderer.invoke('exports.deleteLog', id),
     getConfig: () => ipcRenderer.invoke('exports.getConfig'),

@@ -1,0 +1,55 @@
+name: Bump react submodule
+
+# Fired by the application repo (Anemone221/Sovereignty-Fitting-Tool) after a
+# verified push to its main. Moves the `react` submodule pointer to that tip,
+# commits it, and kicks off the packaging build.
+
+on:
+  repository_dispatch:
+    types: [react-updated]
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit the new submodule pointer
+  actions: write # start Build via workflow_dispatch
+
+concurrency:
+  group: bump-react
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: main
+
+      - name: Move react/ to the tip of its tracked branch
+        # `branch = main` in .gitmodules is what --remote follows.
+        run: git submodule update --remote --recursive react
+
+      - name: Commit the new pointer
+        id: commit
+        run: |
+          if git diff --quiet -- react; then
+            echo "react is already at the requested commit — nothing to do."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sha=$(git -C react rev-parse --short HEAD)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Bump react submodule to $sha"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger the packaging build
+        # A push made with GITHUB_TOKEN deliberately does not fire `on: push`,
+        # so Build has to be started explicitly.
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build.yml --ref main

@@ -67,7 +67,7 @@ process imports each handler module from `@core/handlers/...`, registers them
 into a transport-agnostic registry (`core/registerCore.ts`), and the
 `electron/ipc/index.ts` adapter bridges that registry onto `ipcMain`.
 
-Updating the submodule:
+Updating the submodule by hand:
 
 ```bash
 cd react
@@ -76,6 +76,30 @@ cd ..
 git add react
 git commit -m "Bump submodule to <sha>"
 ```
+
+## Automatic rebuilds
+
+A submodule pins an exact commit, so work landing in the application repo does
+not reach a release until `react/` is re-pinned. That happens on its own:
+
+1. A push to the application repo's `main` runs its CI (typecheck, lint,
+   `build:web`) and, if green, sends a `react-updated` `repository_dispatch`
+   here.
+2. [`bump-react.yml`](.github/workflows/bump-react.yml) moves `react/` to the
+   tip of its tracked branch, commits `Bump react submodule to <sha>`, and
+   starts [`build.yml`](.github/workflows/build.yml) — explicitly, because a
+   push made with `GITHUB_TOKEN` does not fire an `on: push` trigger. That is
+   what the `workflow_dispatch:` trigger on `build.yml` is for; don't remove it.
+3. `build.yml` packages Windows / macOS / Linux and publishes a dated `-BETA`
+   prerelease.
+
+The dispatch in step 1 needs a fine-grained PAT with **Contents: read-write**
+on *this* repo, stored as `DESKTOP_DISPATCH_TOKEN` in the application repo's
+Actions secrets. When it expires the application repo's CI still passes and this
+repo simply stops rebuilding — the dispatch step logs a warning instead of
+failing. Re-pin by hand (above) until it's replaced.
+
+To re-run the bump without a push upstream: `gh workflow run bump-react.yml`.
 
 ## License
 

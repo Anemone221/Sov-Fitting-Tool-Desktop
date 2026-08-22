@@ -3,6 +3,9 @@ name: Build
 on:
   push:
     branches: [main]
+  # Started by bump-react.yml after it re-pins the `react` submodule; a push
+  # made with GITHUB_TOKEN does not fire the trigger above.
+  workflow_dispatch:
 
 jobs:
   build-windows:
