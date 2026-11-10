@@ -113,6 +113,7 @@ const api: EveSovApi = {
     add: (planId, systemId, structure) => ipcRenderer.invoke('structures.add', planId, systemId, structure),
     remove: (planId, structureId) => ipcRenderer.invoke('structures.remove', planId, structureId),
     importClipboard: (planId, systemId, text) => ipcRenderer.invoke('structures.importClipboard', planId, systemId, text),
+    importStructureList: (planId, text) => ipcRenderer.invoke('structures.importStructureList', planId, text),
     profitability: (structureId) => ipcRenderer.invoke('structures.profitability', structureId),
   },
   map: {
